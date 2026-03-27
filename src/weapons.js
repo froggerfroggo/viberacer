@@ -1,88 +1,109 @@
-// =====================================================================
-// WEAPON ROSTER
-// =====================================================================
-// To add your weapon art:
-//   1. Copy assets/weapons/weapon_template.js and add your drawFn
-//   2. Import it below and set it on the matching entry's drawFn field
-//
-// Example (uncomment when your file is ready):
-// import { drawFn as swordDraw }   from '../assets/weapons/sword.js';
-// import { drawFn as hammerDraw }  from '../assets/weapons/hammer.js';
-// =====================================================================
+import { drawFn as boomerangDraw } from "../assets/weapons/boomerang.js";
+import { drawFn as flashDraw } from "../assets/weapons/flash.js";
+import { drawFn as hammerDraw } from "../assets/weapons/hammer.js";
+import { drawFn as nunchakusDraw } from "../assets/weapons/nunchakus.js";
+import { drawFn as scytheDraw } from "../assets/weapons/scythe.js";
+import { drawFn as shurikenDraw } from "../assets/weapons/shuriken.js";
+import { drawFn as stapleGunDraw } from "../assets/weapons/staple_gun.js";
+import { drawFn as swordDraw } from "../assets/weapons/sword.js";
+
+// Weapon roster sourced from /weapons/*.html
 
 export const WEAPONS = [
-
   {
-    id:          'sword',
-    name:        'Sword',
-    color:       '#AABBDD',   // cell preview colour when drawFn is null
-    accentColor: '#445577',
-    drawFn:      null,        // ← set to your imported draw function
+    id: "boomerang",
+    name: "Boomerang",
+    color: "#C89A5A",
+    accentColor: "#7D4E1D",
+    drawFn: boomerangDraw,
     stats: {
-      lightDamageBonus: 3,   // added on top of character's lightDamage
+      lightDamageBonus: 4,
       heavyDamageBonus: 6,
-      reachBonus:       8,   // extra px of attack reach
+      reachBonus: 10,
     },
   },
   {
-    id:          'dagger',
-    name:        'Dagger',
-    color:       '#DDAAAA',
-    accentColor: '#774444',
-    drawFn:      null,
+    id: "flash",
+    name: "Flash",
+    color: "#79D5FF",
+    accentColor: "#2A7AA8",
+    drawFn: flashDraw,
     stats: {
-      lightDamageBonus: 5,
-      heavyDamageBonus: 3,
-      reachBonus:       2,
+      lightDamageBonus: 3,
+      heavyDamageBonus: 5,
+      reachBonus: 14,
     },
   },
   {
-    id:          'hammer',
-    name:        'Hammer',
-    color:       '#CCAA77',
-    accentColor: '#664422',
-    drawFn:      null,
+    id: "hammer",
+    name: "Hammer",
+    color: "#CCAA77",
+    accentColor: "#664422",
+    drawFn: hammerDraw,
     stats: {
       lightDamageBonus: 2,
       heavyDamageBonus: 14,
-      reachBonus:       4,
+      reachBonus: 4,
     },
   },
   {
-    id:          'staff',
-    name:        'Staff',
-    color:       '#88AACC',
-    accentColor: '#334466',
-    drawFn:      null,
-    stats: {
-      lightDamageBonus: 4,
-      heavyDamageBonus: 8,
-      reachBonus:       14,
-    },
-  },
-  {
-    id:          'axe',
-    name:        'Axe',
-    color:       '#CC8877',
-    accentColor: '#663322',
-    drawFn:      null,
-    stats: {
-      lightDamageBonus: 4,
-      heavyDamageBonus: 11,
-      reachBonus:       6,
-    },
-  },
-  {
-    id:          'claws',
-    name:        'Claws',
-    color:       '#AADD88',
-    accentColor: '#446622',
-    drawFn:      null,
+    id: "nunchakus",
+    name: "Nunchakus",
+    color: "#B07A46",
+    accentColor: "#5C3717",
+    drawFn: nunchakusDraw,
     stats: {
       lightDamageBonus: 6,
-      heavyDamageBonus: 5,
-      reachBonus:       0,
+      heavyDamageBonus: 7,
+      reachBonus: 5,
     },
   },
-
+  {
+    id: "scythe",
+    name: "Scythe",
+    color: "#8A7CAA",
+    accentColor: "#3F3458",
+    drawFn: scytheDraw,
+    stats: {
+      lightDamageBonus: 4,
+      heavyDamageBonus: 12,
+      reachBonus: 11,
+    },
+  },
+  {
+    id: "shuriken",
+    name: "Shuriken",
+    color: "#AAB8C8",
+    accentColor: "#4A5868",
+    drawFn: shurikenDraw,
+    stats: {
+      lightDamageBonus: 5,
+      heavyDamageBonus: 8,
+      reachBonus: 8,
+    },
+  },
+  {
+    id: "staple_gun",
+    name: "Staple Gun",
+    color: "#6699CC",
+    accentColor: "#2F4F77",
+    drawFn: stapleGunDraw,
+    stats: {
+      lightDamageBonus: 4,
+      heavyDamageBonus: 6,
+      reachBonus: 15,
+    },
+  },
+  {
+    id: "sword",
+    name: "Sword",
+    color: "#AABBDD",
+    accentColor: "#445577",
+    drawFn: swordDraw,
+    stats: {
+      lightDamageBonus: 3,
+      heavyDamageBonus: 6,
+      reachBonus: 8,
+    },
+  },
 ];
