@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VibeRacer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="panel intro">
+      <p class="eyebrow">Arcade Sprint</p>
+      <h1>VibeRacer</h1>
+      <p class="lede">
+        Dodge traffic, keep the speed climbing, and survive as long as you can.
+      </p>
+      <div class="controls">
+        <span><kbd>A</kbd> / <kbd>D</kbd> steer</span>
+        <span><kbd>Left</kbd> / <kbd>Right</kbd> steer</span>
+        <span><kbd>Space</kbd> restart after crash</span>
+      </div>
+    </section>
+
+    <section class="game-wrap">
+      <div class="hud panel">
+        <div>
+          <span class="label">Score</span>
+          <strong id="score">0</strong>
+        </div>
+        <div>
+          <span class="label">Best</span>
+          <strong id="best">0</strong>
+        </div>
+        <div>
+          <span class="label">Speed</span>
+          <strong id="speed">1.0x</strong>
+        </div>
+      </div>
+
+      <div class="canvas-frame">
+        <canvas id="game" width="420" height="720" aria-label="Racing game"></canvas>
+        <div class="overlay" id="overlay">
+          <div class="overlay-card">
+            <p class="eyebrow">Ready To Drive</p>
+            <h2 id="overlay-title">Press Any Arrow Key</h2>
+            <p id="overlay-text">Stay in the lane, avoid traffic, and chase a new high score.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>

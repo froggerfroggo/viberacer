@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VibeRacer Map Gallery</title>
+  <style>
+    :root {
+      --bg-1: #0c1022;
+      --bg-2: #1b2147;
+      --panel: rgba(19, 23, 43, 0.8);
+      --panel-border: rgba(255, 238, 210, 0.14);
+      --text: #fff4e7;
+      --muted: #d0c9c0;
+      --accent: #ffc98d;
+      --shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px;
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top, rgba(242, 160, 115, 0.18), transparent 24%),
+        radial-gradient(circle at 18% 16%, rgba(103, 116, 220, 0.24), transparent 22%),
+        linear-gradient(180deg, var(--bg-1), var(--bg-2) 45%, #0b1122);
+    }
+
+    .layout {
+      width: min(1220px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+      gap: 28px;
+      align-items: start;
+    }
+
+    .card,
+    .frame {
+      border: 1px solid var(--panel-border);
+      border-radius: 28px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .card {
+      padding: 28px;
+    }
+
+    .eyebrow,
+    .meta-label {
+      margin: 0;
+      color: var(--accent);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-size: 0.74rem;
+    }
+
+    h1, h2, p {
+      margin: 0;
+    }
+
+    h1 {
+      margin-top: 14px;
+      font-size: clamp(2.4rem, 5vw, 4.2rem);
+      line-height: 0.92;
+      font-weight: 600;
+    }
+
+    .lede {
+      margin-top: 18px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+
+    .controls {
+      margin-top: 26px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .control {
+      display: grid;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 0.88rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 243, 226, 0.12);
+      border-radius: 14px;
+      font: inherit;
+    }
+
+    .season-wrap.hidden {
+      display: none;
+    }
+
+    .meta {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 243, 226, 0.1);
+      display: grid;
+      gap: 14px;
+    }
+
+    .meta p:last-child {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .frame {
+      padding: 18px;
+    }
+
+    .frame-inner {
+      position: relative;
+      padding: 14px;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 18px;
+      image-rendering: pixelated;
+      background: #090d1c;
+    }
+
+    .caption {
+      margin-top: 14px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.92rem;
+      letter-spacing: 0.04em;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="layout">
+    <section class="card">
+      <p class="eyebrow">Map Gallery</p>
+      <h1>Five Artistic Worlds</h1>
+      <p class="lede">
+        Preview five hand-drawn pixel maps: meadow, autumn forest, underwater, castle night, and space.
+        Earth-based scenes also support seasonal changes so the same world can shift mood through the year.
+      </p>
+
+      <div class="controls">
+        <div class="control">
+          <label for="map-select">Map Theme</label>
+          <select id="map-select"></select>
+        </div>
+
+        <div class="control season-wrap" id="season-wrap">
+          <label for="season-select">Time Of Year</label>
+          <select id="season-select"></select>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div>
+          <p class="meta-label">Current Map</p>
+          <h2 id="map-title">Painterly Meadow</h2>
+        </div>
+        <p id="map-description">
+          Soft sunrise grasslands with a reflective lake, winding path, and glowing fireflies.
+        </p>
+      </div>
+    </section>
+
+    <section class="frame">
+      <div class="frame-inner">
+        <canvas id="map" width="1000" height="600" aria-label="Map preview"></canvas>
+      </div>
+      <p class="caption">Live animated preview with map switching and seasonal variants</p>
+    </section>
+  </main>
+
+  <script src="map.js"></script>
+  <script>
+    const canvas = document.getElementById("map");
+    const ctx = canvas.getContext("2d");
+    const mapSelect = document.getElementById("map-select");
+    const seasonSelect = document.getElementById("season-select");
+    const seasonWrap = document.getElementById("season-wrap");
+    const mapTitle = document.getElementById("map-title");
+    const mapDescription = document.getElementById("map-description");
+
+    const descriptions = {
+      meadow: {
+        title: "Painterly Meadow",
+        text: "Soft sunrise grasslands with a reflective lake, winding path, and glowing fireflies."
+      },
+      forest: {
+        title: "Autumn Forest",
+        text: "A dense storybook woodland with layered trees, drifting leaves, and warm forest-floor color."
+      },
+      underwater: {
+        title: "Underwater Garden",
+        text: "Shimmering blue water, coral growth, bubbles, and fish passing over sandy dunes."
+      },
+      castle: {
+        title: "Night At The Castle",
+        text: "Moonlit stone towers, banners, water, and a darker fantasy mood with seasonal ground changes."
+      },
+      space: {
+        title: "Starfield Drift",
+        text: "Nebula clouds, distant planets, glowing crystals, and floating asteroid-like platforms."
+      }
+    };
+
+    const state = {
+      mapType: "meadow",
+      season: "summer"
+    };
+
+    function titleCase(value) {
+      return value.charAt(0).toUpperCase() + value.slice(1);
+    }
+
+    function populateControls() {
+      FIELD_MAP_META.maps.forEach((map) => {
+        const option = document.createElement("option");
+        option.value = map.id;
+        option.textContent = map.label;
+        mapSelect.appendChild(option);
+      });
+
+      FIELD_MAP_META.seasons.forEach((season) => {
+        const option = document.createElement("option");
+        option.value = season;
+        option.textContent = titleCase(season);
+        seasonSelect.appendChild(option);
+      });
+
+      mapSelect.value = state.mapType;
+      seasonSelect.value = state.season;
+      syncUi();
+    }
+
+    function syncUi() {
+      const mapMeta = FIELD_MAP_META.maps.find((map) => map.id === state.mapType);
+      const earth = mapMeta && mapMeta.earth;
+      seasonWrap.classList.toggle("hidden", !earth);
+      mapTitle.textContent = descriptions[state.mapType].title;
+      mapDescription.textContent = earth
+        ? descriptions[state.mapType].text + " Current season: " + titleCase(state.season) + "."
+        : descriptions[state.mapType].text;
+    }
+
+    mapSelect.addEventListener("change", (event) => {
+      state.mapType = event.target.value;
+      syncUi();
+    });
+
+    seasonSelect.addEventListener("change", (event) => {
+      state.season = event.target.value;
+      syncUi();
+    });
+
+    function render(time) {
+      drawFieldMap(ctx, canvas.width, canvas.height, { time, mapType: state.mapType, season: state.season });
+      requestAnimationFrame(render);
+    }
+
+    populateControls();
+    requestAnimationFrame(render);
+  </script>
+</body>
+</html>
