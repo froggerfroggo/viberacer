@@ -1,27 +1,32 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Pixel Brawl</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #0d0d0d;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      overflow: hidden;
-    }
-    canvas {
-      display: block;
-      image-rendering: pixelated;
-      image-rendering: crisp-edges;
-    }
-  </style>
-</head>
-<body>
-  <canvas id="gameCanvas" width="480" height="270"></canvas>
-  <script type="module" src="src/main.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Pixel Brawl</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: #0d0d0d;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="gameCanvas" width="480" height="270"></canvas>
+    <script src="map.js"></script>
+    <script type="module" src="src/main.js"></script>
+  </body>
 </html>
