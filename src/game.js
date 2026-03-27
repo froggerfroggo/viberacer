@@ -1,10 +1,11 @@
 import { CharacterSelectState } from './states/characterSelect.js';
+import { WeaponSelectState }    from './states/weaponSelect.js';
 import { StageSelectState }     from './states/stageSelect.js';
 import { FightState }           from './states/fight.js';
 import { RoundEndState }        from './states/roundEnd.js';
 import { clearFrame }           from './input.js';
 
-const FIXED_DT = 1000 / 60; // ms per logic tick
+const FIXED_DT = 1000 / 60;
 
 export class Game {
   constructor(canvas) {
@@ -15,6 +16,7 @@ export class Game {
 
     this.states = {
       characterSelect: new CharacterSelectState(),
+      weaponSelect:    new WeaponSelectState(),
       stageSelect:     new StageSelectState(),
       fight:           new FightState(),
       roundEnd:        new RoundEndState(),
@@ -56,21 +58,26 @@ export class Game {
   }
 
   // ── State transitions ─────────────────────────────────────────────
-  // Flow: characterSelect → stageSelect → fight → roundEnd → characterSelect
+  // Flow: characterSelect → weaponSelect → stageSelect → fight → roundEnd → characterSelect
 
   goToCharacterSelect() {
     this.currentState = this.states.characterSelect;
     this.currentState.enter(this);
   }
 
-  goToStageSelect(char1, char2) {
-    this.currentState = this.states.stageSelect;
+  goToWeaponSelect(char1, char2) {
+    this.currentState = this.states.weaponSelect;
     this.currentState.enter(this, { char1, char2 });
   }
 
-  startFight(char1, char2, stage) {
+  goToStageSelect(char1, char2, weapon1, weapon2) {
+    this.currentState = this.states.stageSelect;
+    this.currentState.enter(this, { char1, char2, weapon1, weapon2 });
+  }
+
+  startFight(char1, char2, weapon1, weapon2, stage) {
     this.currentState = this.states.fight;
-    this.currentState.enter(this, { char1, char2, stage });
+    this.currentState.enter(this, { char1, char2, weapon1, weapon2, stage });
   }
 
   endFight(winner) {

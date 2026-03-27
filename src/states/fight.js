@@ -17,9 +17,11 @@ function rectsOverlap(a, b) {
 }
 
 export class FightState {
-  enter(game, { char1, char2, stage }) {
+  enter(game, { char1, char2, weapon1, weapon2, stage }) {
     this.p1    = new Player(100, FLOOR_Y, char1,  1, 1);
     this.p2    = new Player(380, FLOOR_Y, char2, -1, 2);
+    this.p1.weapon = weapon1 || null;
+    this.p2.weapon = weapon2 || null;
     this.stage = stage || null;
 
     this.timer      = ROUND_SECONDS * 60; // in frames
@@ -81,10 +83,16 @@ export class FightState {
 
     attacker.attackHit = true;
 
-    const data   = ATTACKS[attacker.attackType];
-    const damage = attacker.attackType === 'light'
+    const data        = ATTACKS[attacker.attackType];
+    const baseDamage  = attacker.attackType === 'light'
       ? attacker.character.stats.lightDamage
       : attacker.character.stats.heavyDamage;
+    const weaponBonus = attacker.weapon
+      ? (attacker.attackType === 'light'
+          ? attacker.weapon.stats.lightDamageBonus
+          : attacker.weapon.stats.heavyDamageBonus)
+      : 0;
+    const damage = baseDamage + weaponBonus;
 
     // Knockback pushes defender away from attacker's facing direction
     defender.receiveHit(damage, data.knockbackX * attacker.facing, data.knockbackY, data.hitstun);

@@ -34,9 +34,9 @@ export class CharacterSelectState {
       if (pressed.light || pressed.heavy) this.confirmed[p] = true;
     }
 
-    // Both confirmed → go to stage select
+    // Both confirmed → go to weapon select
     if (this.confirmed[0] && this.confirmed[1] && this.flashTimer > 90) {
-      game.goToStageSelect(
+      game.goToWeaponSelect(
         CHARACTERS[this.cursors[0]],
         CHARACTERS[this.cursors[1]]
       );
