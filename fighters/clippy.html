@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>VSCode Pet Fighter - Clippy</title>
+  <style>
+    body {
+      background: #1e1e1e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      font-family: monospace;
+      color: #fff;
+    }
+    canvas {
+      image-rendering: pixelated;
+      border: 2px solid #444;
+      background: #2d2d2d;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 12px; color: #c8c060; }
+    .controls { margin-top: 14px; display: flex; gap: 10px; }
+    button {
+      background: #3a3a3a;
+      color: #fff;
+      border: 1px solid #666;
+      padding: 6px 16px;
+      cursor: pointer;
+      font-family: monospace;
+      border-radius: 4px;
+    }
+    button:hover { background: #555; }
+    button.active { background: #c8c060; color: #1e1e1e; }
+    .state-label { margin-top: 8px; color: #aaa; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <h1>📎 Clippy — VS Code Pet Fighter</h1>
+  <canvas id="c" width="192" height="192"></canvas>
+  <div class="state-label">State: <span id="stateLabel">idle</span></div>
+  <div class="controls">
+    <button class="active" onclick="setState('idle', this)">Idle</button>
+    <button onclick="setState('walk', this)">Bounce</button>
+    <button onclick="setState('attack', this)">Stab!</button>
+    <button onclick="setState('hurt', this)">Hurt</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const SCALE = 6;
+    const W = 32, H = 32;
+
+    const PAL = {
+      0: null,
+      1: '#c8c060',  // gold/yellow metallic
+      2: '#8a8030',  // dark gold
+      3: '#e8e090',  // light gold highlight
+      4: '#1a1a1a',  // black outline
+      5: '#ffffff',  // white
+      6: '#4444ff',  // blue eyes
+      7: '#aaaaaa',  // grey shadow
+      8: '#ffff88',  // bright highlight
+      9: '#ff4444',  // hurt red
+    };
+
+    // Clippy: a paperclip with eyes and limbs
+    // Shape: classic double-loop paperclip standing upright
+    const idle1 = [
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,4,1,1,1,1,1,1,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,4,3,3,1,1,1,1,1,1,4,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,4,3,3,1,1,1,1,1,1,1,4,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,4,1,1,4,4,1,1,4,4,1,4,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,4,1,4,5,6,4,1,4,5,6,4,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,4,1,4,4,4,4,1,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,4,1,1,1,1,1,1,1,1,1,4,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,4,1,1,1,4,4,4,1,1,1,4,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,4,1,1,1,1,1,1,1,1,1,4,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,4,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      // body - paperclip loops
+      [0,0,0,0,0,0,0,4,4,1,1,1,1,1,1,1,1,1,1,4,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,4,1,1,1,1,1,1,1,1,1,1,1,1,1,4,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,4,3,3,1,1,1,1,1,1,1,1,1,1,1,4,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,4,1,1,1,1,1,1,1,1,1,1,1,1,1,4,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,4,1,1,1,1,1,1,1,1,1,1,1,1,1,4,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,4,1,2,1,1,1,1,1,1,1,2,1,4,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,4,2,2,2,1,1,1,1,1,2,2,2,4,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,4,1,2,1,1,1,1,1,1,1,2,1,4,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,4,1,1,1,1,1,1,1,1,1,1,1,1,1,4,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,4,2,2,2,2,2,2,2,2,2,2,2,2,2,4,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,4,4,4,4,4,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0],
+      // legs
+      [0,0,0,0,0,0,0,0,0,4,1,1,4,0,0,0,4,1,1,4,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,4,1,4,0,0,0,0,0,4,1,4,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,4,1,1,4,0,0,0,0,0,4,1,1,4,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,4,2,2,4,0,0,0,0,0,4,2,2,4,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    ];
+
+    // Idle 2: eyebrow raise (curious look)
+    const idle2 = idle1.map(r => [...r]);
+    idle2[5] = [0,0,0,0,0,0,0,0,4,4,4,1,1,1,1,1,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0];
+    idle2[6] = [0,0,0,0,0,0,0,0,4,1,1,4,4,1,1,4,4,1,4,0,0,0,0,0,0,0,0,0,0,0,0,0];
+
+    // Bounce frames: whole body shifts up/down
+    const walk1 = idle1.map((row, y) => {
+      if (y === 0) return new Array(32).fill(0);
+      return y < 31 ? [...idle1[y + 1]] : new Array(32).fill(0);
+    });
+    const walk2 = idle1.map((row, y) => {
+      if (y < 2) return new Array(32).fill(0);
+      return [...idle1[y - 2]];
+    });
+
+    // Attack: sharp tip stabs right
+    const atk1 = idle1.map(r => [...r]);
+    atk1[13] = [0,0,0,0,0,0,0,4,4,1,1,1,1,1,1,1,1,1,1,4,4,4,0,0,0,0,0,0,0,0,0,0];
+    atk1[14] = [0,0,0,0,0,0,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,4,4,0,0,0,0,0,0,0];
+    atk1[15] = [0,0,0,0,0,0,4,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,4,0,0,0,0,0,0];
+    atk1[16] = [0,0,0,0,0,0,4,1,1,1,1,1,1,1,1,1,1,1,1,1,4,1,1,4,4,0,0,0,0,0,0,0];
+    atk1[17] = [0,0,0,0,0,0,4,1,1,1,1,1,1,1,1,1,1,1,1,1,4,0,0,0,0,0,0,0,0,0,0,0];
+
+    const atk2 = idle1.map(r => [...r]);
+    atk2[13] = [0,0,0,0,0,0,0,4,4,1,1,1,1,1,1,1,1,1,1,4,0,4,4,4,4,0,0,0,0,0,0,0];
+    atk2[14] = [0,0,0,0,0,0,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,4,4,0,0,0,0,0];
+    atk2[15] = [0,0,0,0,0,0,4,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,4,4,0,0,0,0];
+    atk2[16] = [0,0,0,0,0,0,4,1,1,1,1,1,1,1,1,1,1,1,1,1,4,1,1,4,4,4,0,0,0,0,0,0];
+    atk2[17] = [0,0,0,0,0,0,4,1,1,1,1,1,1,1,1,1,1,1,1,1,4,0,0,0,0,0,0,0,0,0,0,0];
+
+    // Hurt: red tint
+    const hurt1 = idle1.map(row => row.map(v => (v === 1 || v === 3) ? 9 : v));
+
+    const states = {
+      idle:   [idle1, idle2, idle1, idle2],
+      walk:   [walk1, walk2, walk1, walk2],
+      attack: [atk1, atk2, atk1, idle1],
+      hurt:   [hurt1, idle1, hurt1, idle1],
+    };
+
+    let currentState = 'idle';
+    let frame = 0;
+    let tick = 0;
+    const SPEED = 10;
+
+    function drawFrame(grid) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          const v = grid[y][x];
+          if (v === 0) continue;
+          ctx.fillStyle = PAL[v];
+          ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
+        }
+      }
+    }
+
+    function setState(s, btn) {
+      currentState = s;
+      frame = 0;
+      tick = 0;
+      document.getElementById('stateLabel').textContent = s;
+      document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+    }
+
+    function loop() {
+      tick++;
+      if (tick >= SPEED) {
+        tick = 0;
+        const frames = states[currentState];
+        frame = (frame + 1) % frames.length;
+        drawFrame(frames[frame]);
+      }
+      requestAnimationFrame(loop);
+    }
+
+    drawFrame(idle1);
+    loop();
+  </script>
+</body>
+</html>
