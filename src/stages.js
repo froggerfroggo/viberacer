@@ -13,6 +13,7 @@ function getMapLabel(id, fallback) {
 function createMapStage({ id, fallbackName, previewColor, season }) {
   return {
     id,
+    mapType: id,
     name: getMapLabel(id, fallbackName),
     previewColor,
     drawBackground: (ctx, width, height) => {
