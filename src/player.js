@@ -358,12 +358,24 @@ export class Player {
       this.drawPlaceholder(ctx);
     }
 
-    // Draw weapon on top of character
+    // Draw weapon beside the fighter; during attacks push it toward hitbox space.
     if (this.weapon && this.weapon.drawFn) {
+      let weaponX = this.x + this.facing * 10;
+      let weaponY = this.y - 2;
+
+      if (this.isAttacking()) {
+        const attack = ATTACKS[this.attackType || "light"];
+        const reachBonus = this.weapon.stats?.reachBonus || 0;
+        const reach = (attack ? attack.reach : 24) + reachBonus;
+        const attackOffset = Math.max(12, Math.round(reach * 0.45));
+        weaponX = this.x + this.facing * attackOffset;
+        weaponY = this.y - 4;
+      }
+
       this.weapon.drawFn(
         ctx,
-        this.x,
-        this.y,
+        weaponX,
+        weaponY,
         this.facing,
         this.state,
         this.frameCount,
