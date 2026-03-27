@@ -370,18 +370,6 @@ export class Player {
       );
     }
 
-    // Active hitbox glow
-    if (this.isActiveAttack()) {
-      const hb = this.getAttackHitbox();
-      if (hb) {
-        ctx.fillStyle = "rgba(255,220,0,0.25)";
-        ctx.strokeStyle = "rgba(255,220,0,0.7)";
-        ctx.lineWidth = 1;
-        ctx.fillRect(hb.x, hb.y, hb.w, hb.h);
-        ctx.strokeRect(hb.x, hb.y, hb.w, hb.h);
-      }
-    }
-
     ctx.restore();
   }
 
