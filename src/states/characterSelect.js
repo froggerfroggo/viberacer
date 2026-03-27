@@ -1,17 +1,17 @@
 import { CHARACTERS } from '../characters.js';
 import { getPressed } from '../input.js';
 
-const COLS   = Math.min(CHARACTERS.length, 4);
-const CELL_W = 72;
-const CELL_H = 80;
-const GRID_X = (480 - COLS * CELL_W) / 2;
-const GRID_Y = 90;
+// 3×3 grid layout (fits 9 characters exactly)
+const COLS   = 3;
+const CELL_W = 84;
+const CELL_H = 74;
+const GRID_X = Math.floor((480 - COLS * CELL_W) / 2);  // 114
+const GRID_Y = 38;
 
 export class CharacterSelectState {
   enter() {
-    // Each player starts on a different slot
-    this.cursors   = [0, Math.min(1, CHARACTERS.length - 1)];
-    this.confirmed = [false, false];
+    this.cursors    = [0, Math.min(1, CHARACTERS.length - 1)];
+    this.confirmed  = [false, false];
     this.flashTimer = 0;
   }
 
@@ -22,21 +22,24 @@ export class CharacterSelectState {
       if (this.confirmed[p]) continue;
 
       const pressed = getPressed(p + 1);
-      if (pressed.left)  this.cursors[p] = Math.max(0, this.cursors[p] - 1);
-      if (pressed.right) this.cursors[p] = Math.min(CHARACTERS.length - 1, this.cursors[p] + 1);
+      const col = this.cursors[p] % COLS;
+      const row = Math.floor(this.cursors[p] / COLS);
+
+      if (pressed.left  && col > 0)                                      this.cursors[p]--;
+      if (pressed.right && col < COLS - 1
+                        && this.cursors[p] + 1 < CHARACTERS.length)     this.cursors[p]++;
+      if (pressed.up    && row > 0)                                      this.cursors[p] -= COLS;
+      if (pressed.down  && this.cursors[p] + COLS < CHARACTERS.length)  this.cursors[p] += COLS;
+
       if (pressed.light || pressed.heavy) this.confirmed[p] = true;
     }
 
-    // Both confirmed → start fight after brief pause
+    // Both confirmed → go to stage select
     if (this.confirmed[0] && this.confirmed[1] && this.flashTimer > 90) {
-      game.startFight(
+      game.goToStageSelect(
         CHARACTERS[this.cursors[0]],
         CHARACTERS[this.cursors[1]]
       );
-    }
-    if (this.confirmed[0] && this.confirmed[1] && this.flashTimer < 91) {
-      // Reset flash timer on second confirmation
-      if (this.confirmed.every(Boolean)) this.flashTimer = Math.max(this.flashTimer, 0);
     }
   }
 
@@ -44,110 +47,119 @@ export class CharacterSelectState {
     const W = game.width;
     const H = game.height;
 
-    // Background
     ctx.fillStyle = '#0e0e1a';
     ctx.fillRect(0, 0, W, H);
     this.drawStarfield(ctx);
 
-    // Title
     ctx.fillStyle = '#FFEE44';
-    ctx.font      = 'bold 16px monospace';
+    ctx.font      = 'bold 14px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('SELECT YOUR FIGHTER', W / 2, 22);
+    ctx.fillText('SELECT YOUR FIGHTER', W / 2, 20);
 
-    // Subtitle divider line
     ctx.fillStyle = '#332244';
-    ctx.fillRect(0, 28, W, 1);
+    ctx.fillRect(0, 26, W, 1);
 
-    // Control hints
-    ctx.font = '8px monospace';
+    ctx.font      = '7px monospace';
     ctx.fillStyle = '#4499FF';
     ctx.textAlign = 'left';
-    ctx.fillText('P1: A/D  |  F = select', 8, H - 8);
+    ctx.fillText('P1: WASD  |  F = confirm', 6, H - 8);
     ctx.fillStyle = '#FF5555';
     ctx.textAlign = 'right';
-    ctx.fillText('P2: ←/→  |  , = select', W - 8, H - 8);
+    ctx.fillText('P2: ←↑↓→  |  , = confirm', W - 6, H - 8);
 
     // Character grid
     for (let i = 0; i < CHARACTERS.length; i++) {
-      const cellX = GRID_X + i * CELL_W;
-      const cellY = GRID_Y;
+      const col   = i % COLS;
+      const row   = Math.floor(i / COLS);
+      const cellX = GRID_X + col * CELL_W;
+      const cellY = GRID_Y + row * CELL_H;
       this.drawCharacterCell(ctx, i, cellX, cellY);
     }
 
-    // Bottom status
-    const bothConfirmed = this.confirmed[0] && this.confirmed[1];
-    if (bothConfirmed) {
+    // Status line
+    if (this.confirmed[0] && this.confirmed[1]) {
       const alpha = 0.5 + 0.5 * Math.sin(this.flashTimer * 0.18);
       ctx.fillStyle = `rgba(255,238,68,${alpha})`;
-      ctx.font      = 'bold 14px monospace';
+      ctx.font      = 'bold 12px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('FIGHT!', W / 2, GRID_Y + CELL_H + 28);
+      ctx.fillText('FIGHT!', W / 2, GRID_Y + 3 * CELL_H + 14);
     } else {
       ctx.fillStyle = '#555';
-      ctx.font      = '8px monospace';
+      ctx.font      = '7px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('Press attack button to confirm', W / 2, GRID_Y + CELL_H + 18);
+      ctx.fillText('Press attack to confirm', W / 2, GRID_Y + 3 * CELL_H + 12);
     }
   }
 
   drawCharacterCell(ctx, index, cx, cy) {
-    const char   = CHARACTERS[index];
-    const pad    = 4;
-    const innerW = CELL_W - pad * 2;
-    const innerH = CELL_H - pad * 2;
-    const ix     = cx + pad;
-    const iy     = cy + pad;
+    const char  = CHARACTERS[index];
+    const pad   = 4;
+    const iw    = CELL_W - pad * 2;
+    const ih    = CELL_H - pad * 2;
+    const ix    = cx + pad;
+    const iy    = cy + pad;
+    const nameH = 12;
+    const artH  = ih - nameH;
 
-    // Cell bg
+    // Cell background
     ctx.fillStyle = '#16162a';
-    ctx.fillRect(ix, iy, innerW, innerH);
+    ctx.fillRect(ix, iy, iw, ih);
 
-    // Character colour swatch
-    ctx.fillStyle = char.color;
-    ctx.fillRect(ix + 2, iy + 2, innerW - 4, innerH - 18);
-
-    // Tiny face
-    this.drawTinyFace(ctx, ix + innerW / 2, iy + (innerH - 18) / 2 + 2, char);
+    // Art: use drawFn preview if available, else colour swatch
+    if (char.drawFn) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(ix + 1, iy + 1, iw - 2, artH - 1);
+      ctx.clip();
+      const scale = Math.min(iw / 22, artH / 38) * 0.75;
+      const preX  = ix + iw / 2;
+      const preY  = iy + artH;
+      ctx.translate(preX, preY);
+      ctx.scale(scale, scale);
+      ctx.translate(-preX, -preY);
+      char.drawFn(ctx, preX, preY, 1, 'idle', 0);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = char.color;
+      ctx.fillRect(ix + 2, iy + 2, iw - 4, artH - 2);
+      this.drawTinyFace(ctx, ix + iw / 2, iy + artH / 2, char);
+    }
 
     // Name
-    ctx.fillStyle   = '#DDD';
-    ctx.font        = '7px monospace';
-    ctx.textAlign   = 'center';
-    ctx.fillText(char.name, ix + innerW / 2, iy + innerH - 5);
+    ctx.fillStyle = '#DDD';
+    ctx.font      = '7px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(char.name, ix + iw / 2, iy + ih - 3);
 
     // P1 cursor (blue)
     if (this.cursors[0] === index) {
       ctx.strokeStyle = this.confirmed[0] ? '#88CCFF' : '#4499FF';
       ctx.lineWidth   = this.confirmed[0] ? 3 : 2;
-      ctx.strokeRect(ix - 1, iy - 1, innerW + 2, innerH + 2);
+      ctx.strokeRect(ix - 1, iy - 1, iw + 2, ih + 2);
       ctx.fillStyle = this.confirmed[0] ? '#4499FF' : '#1a3a88';
       ctx.font      = '7px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(this.confirmed[0] ? 'P1 ✓' : 'P1', ix + innerW / 2, iy - 3);
+      ctx.fillText(this.confirmed[0] ? 'P1 ✓' : 'P1', ix + iw / 2, iy - 3);
     }
 
-    // P2 cursor (red) — offset 3px if same slot as P1
+    // P2 cursor (red) — slightly offset if on same slot
     if (this.cursors[1] === index) {
       const off = this.cursors[0] === index ? 3 : 0;
       ctx.strokeStyle = this.confirmed[1] ? '#FFAAAA' : '#FF5555';
       ctx.lineWidth   = this.confirmed[1] ? 3 : 2;
-      ctx.strokeRect(ix - 1 + off, iy - 1 + off, innerW + 2, innerH + 2);
+      ctx.strokeRect(ix - 1 + off, iy - 1 + off, iw + 2, ih + 2);
       ctx.fillStyle = this.confirmed[1] ? '#FF5555' : '#881a1a';
       ctx.font      = '7px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(this.confirmed[1] ? 'P2 ✓' : 'P2', ix + innerW / 2 + off, iy + innerH + 9);
+      ctx.fillText(this.confirmed[1] ? 'P2 ✓' : 'P2', ix + iw / 2 + off, iy + ih + 8);
     }
   }
 
   drawTinyFace(ctx, cx, cy, char) {
-    // Head
     ctx.fillStyle = char.accentColor;
     ctx.fillRect(Math.floor(cx - 9), Math.floor(cy - 11), 18, 16);
-    // Body hint
     ctx.fillStyle = char.color;
     ctx.fillRect(Math.floor(cx - 7), Math.floor(cy - 3), 14, 8);
-    // Eyes
     ctx.fillStyle = '#FFF';
     ctx.fillRect(Math.floor(cx - 6), Math.floor(cy - 9), 4, 4);
     ctx.fillRect(Math.floor(cx + 2), Math.floor(cy - 9), 4, 4);
@@ -157,12 +169,10 @@ export class CharacterSelectState {
   }
 
   drawStarfield(ctx) {
-    ctx.fillStyle = 'rgba(255,255,255,0.35)';
-    const stars = [
-      [18,14],[55,38],[98,7],[182,52],[243,18],[301,44],[375,11],
-      [428,37],[48,198],[155,215],[251,238],[348,208],[451,225],
-      [120,72],[200,85],[310,60],[400,78],
-    ];
-    for (const [x, y] of stars) ctx.fillRect(x, y, 1, 1);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    [[18,14],[55,38],[98,7],[182,52],[243,18],[301,44],[375,11],
+     [428,37],[48,198],[155,215],[251,238],[348,208],[451,225]].forEach(
+      ([x, y]) => ctx.fillRect(x, y, 1, 1)
+    );
   }
 }

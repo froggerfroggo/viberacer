@@ -17,9 +17,10 @@ function rectsOverlap(a, b) {
 }
 
 export class FightState {
-  enter(game, { char1, char2 }) {
-    this.p1 = new Player(100, FLOOR_Y, char1,  1, 1);
-    this.p2 = new Player(380, FLOOR_Y, char2, -1, 2);
+  enter(game, { char1, char2, stage }) {
+    this.p1    = new Player(100, FLOOR_Y, char1,  1, 1);
+    this.p2    = new Player(380, FLOOR_Y, char2, -1, 2);
+    this.stage = stage || null;
 
     this.timer      = ROUND_SECONDS * 60; // in frames
     this.winner     = null;
@@ -110,6 +111,7 @@ export class FightState {
     this.p1.draw(ctx);
     this.p2.draw(ctx);
 
+    this.drawForeground(ctx, W, H);
     this.drawHUD(ctx, W);
 
     if (this.winner !== null) this.drawWinOverlay(ctx, W, H);
@@ -120,27 +122,23 @@ export class FightState {
   // FLOOR_Y, STAGE_LEFT, STAGE_RIGHT are exported for your use.
 
   drawBackground(ctx, w, h) {
-    // Placeholder sky — replace with stage background sprite
+    if (this.stage && this.stage.drawBackground) {
+      this.stage.drawBackground(ctx, w, h);
+      return;
+    }
+    // Placeholder sky
     ctx.fillStyle = '#10082a';
     ctx.fillRect(0, 0, w, h);
-
-    // Simple pixel gradient layers
     ctx.fillStyle = '#1c0e3a';
     ctx.fillRect(0, 60,  w, 60);
     ctx.fillStyle = '#241448';
     ctx.fillRect(0, 120, w, 40);
     ctx.fillStyle = '#2c1a50';
     ctx.fillRect(0, 160, w, FLOOR_Y - 160);
-
-    // Distant silhouette columns
     ctx.fillStyle = '#1a0d35';
-    const cols = [40, 100, 200, 310, 380, 430];
-    const colH = [80, 60, 90, 70, 55, 85];
-    for (let i = 0; i < cols.length; i++) {
-      ctx.fillRect(cols[i], FLOOR_Y - colH[i], 20, colH[i]);
-    }
-
-    // Stars
+    [[40,80],[100,60],[200,90],[310,70],[380,55],[430,85]].forEach(
+      ([cx, ch]) => ctx.fillRect(cx, FLOOR_Y - ch, 20, ch)
+    );
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
     [[20,8],[55,22],[110,5],[190,18],[255,10],[320,25],[395,8],[445,20]].forEach(
       ([x, y]) => ctx.fillRect(x, y, 1, 1)
@@ -148,23 +146,27 @@ export class FightState {
   }
 
   drawStage(ctx, w, h) {
-    // Platform surface
+    if (this.stage && this.stage.drawFloor) {
+      this.stage.drawFloor(ctx, w, h, FLOOR_Y, STAGE_LEFT, STAGE_RIGHT);
+      return;
+    }
+    // Placeholder floor
     ctx.fillStyle = '#2a1a50';
     ctx.fillRect(STAGE_LEFT, FLOOR_Y, STAGE_RIGHT - STAGE_LEFT, h - FLOOR_Y);
-
-    // Edge highlight
     ctx.fillStyle = '#9955EE';
     ctx.fillRect(STAGE_LEFT, FLOOR_Y, STAGE_RIGHT - STAGE_LEFT, 2);
-
-    // Left / right edge pillars
     ctx.fillStyle = '#3a2460';
-    ctx.fillRect(STAGE_LEFT - 6, FLOOR_Y,     6, h - FLOOR_Y);
-    ctx.fillRect(STAGE_RIGHT,    FLOOR_Y,     6, h - FLOOR_Y);
-
-    // Pixel decorations on floor edge
+    ctx.fillRect(STAGE_LEFT - 6, FLOOR_Y, 6, h - FLOOR_Y);
+    ctx.fillRect(STAGE_RIGHT,    FLOOR_Y, 6, h - FLOOR_Y);
     ctx.fillStyle = '#7733CC';
     for (let x = STAGE_LEFT + 8; x < STAGE_RIGHT; x += 16) {
       ctx.fillRect(x, FLOOR_Y + 3, 4, 2);
+    }
+  }
+
+  drawForeground(ctx, w, h) {
+    if (this.stage && this.stage.drawForeground) {
+      this.stage.drawForeground(ctx, w, h);
     }
   }
 

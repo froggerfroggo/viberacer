@@ -1,4 +1,5 @@
 import { CharacterSelectState } from './states/characterSelect.js';
+import { StageSelectState }     from './states/stageSelect.js';
 import { FightState }           from './states/fight.js';
 import { RoundEndState }        from './states/roundEnd.js';
 import { clearFrame }           from './input.js';
@@ -14,6 +15,7 @@ export class Game {
 
     this.states = {
       characterSelect: new CharacterSelectState(),
+      stageSelect:     new StageSelectState(),
       fight:           new FightState(),
       roundEnd:        new RoundEndState(),
     };
@@ -29,18 +31,17 @@ export class Game {
   }
 
   _loop(timestamp) {
-    const elapsed = Math.min(timestamp - this.lastTime, 100); // cap spike at 100ms
+    const elapsed = Math.min(timestamp - this.lastTime, 100);
     this.lastTime = timestamp;
     this.accumulator += elapsed;
 
-    // Fixed-timestep logic updates
     while (this.accumulator >= FIXED_DT) {
       this._update();
       this.accumulator -= FIXED_DT;
     }
 
     this._draw();
-    clearFrame(); // clear justPressed after all updates + draw
+    clearFrame();
 
     requestAnimationFrame(ts => this._loop(ts));
   }
@@ -55,15 +56,21 @@ export class Game {
   }
 
   // ── State transitions ─────────────────────────────────────────────
+  // Flow: characterSelect → stageSelect → fight → roundEnd → characterSelect
 
   goToCharacterSelect() {
     this.currentState = this.states.characterSelect;
     this.currentState.enter(this);
   }
 
-  startFight(char1, char2) {
-    this.currentState = this.states.fight;
+  goToStageSelect(char1, char2) {
+    this.currentState = this.states.stageSelect;
     this.currentState.enter(this, { char1, char2 });
+  }
+
+  startFight(char1, char2, stage) {
+    this.currentState = this.states.fight;
+    this.currentState.enter(this, { char1, char2, stage });
   }
 
   endFight(winner) {

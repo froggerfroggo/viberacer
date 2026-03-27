@@ -62,6 +62,9 @@ export class Player {
 
     // Hitstun countdown
     this.hurtTimer = 0;
+
+    // Animation frame counter — increments every update tick (~60/sec)
+    this.frameCount = 0;
   }
 
   // ── Stat shortcuts ────────────────────────────────────────────────
@@ -106,6 +109,7 @@ export class Player {
   // ── Per-frame update ──────────────────────────────────────────────
 
   update(held, pressed, floorY, stageLeft, stageRight) {
+    this.frameCount++;
     switch (this.state) {
       case STATE.IDLE:
       case STATE.WALK:
@@ -280,7 +284,9 @@ export class Player {
       ctx.globalAlpha = 0.35;
     }
 
-    if (this.character.sprite) {
+    if (this.character.drawFn) {
+      this.character.drawFn(ctx, this.x, this.y, this.facing, this.state, this.frameCount);
+    } else if (this.character.sprite) {
       this.drawSprite(ctx);
     } else {
       this.drawPlaceholder(ctx);
