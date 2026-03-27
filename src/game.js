@@ -1,35 +1,38 @@
-import { CharacterSelectState } from './states/characterSelect.js';
-import { WeaponSelectState }    from './states/weaponSelect.js';
-import { StageSelectState }     from './states/stageSelect.js';
-import { FightState }           from './states/fight.js';
-import { RoundEndState }        from './states/roundEnd.js';
-import { clearFrame }           from './input.js';
+import { clearFrame } from "./input.js";
+import { CharacterSelectState } from "./states/characterSelect.js";
+import { FightState } from "./states/fight.js";
+import { RoundEndState } from "./states/roundEnd.js";
+import { StageSelectState } from "./states/stageSelect.js";
+import { WeaponSelectState } from "./states/weaponSelect.js";
 
 const FIXED_DT = 1000 / 60;
 
 export class Game {
   constructor(canvas) {
     this.canvas = canvas;
-    this.ctx    = canvas.getContext('2d');
-    this.width  = canvas.width;   // 480
-    this.height = canvas.height;  // 270
+    this.renderScale = 2;
+    this.width = 480;
+    this.height = 270;
+    this.canvas.width = this.width * this.renderScale;
+    this.canvas.height = this.height * this.renderScale;
+    this.ctx = canvas.getContext("2d");
 
     this.states = {
       characterSelect: new CharacterSelectState(),
-      weaponSelect:    new WeaponSelectState(),
-      stageSelect:     new StageSelectState(),
-      fight:           new FightState(),
-      roundEnd:        new RoundEndState(),
+      weaponSelect: new WeaponSelectState(),
+      stageSelect: new StageSelectState(),
+      fight: new FightState(),
+      roundEnd: new RoundEndState(),
     };
 
     this.currentState = null;
-    this.lastTime     = 0;
-    this.accumulator  = 0;
+    this.lastTime = 0;
+    this.accumulator = 0;
   }
 
   start() {
     this.goToCharacterSelect();
-    requestAnimationFrame(ts => this._loop(ts));
+    requestAnimationFrame((ts) => this._loop(ts));
   }
 
   _loop(timestamp) {
@@ -45,7 +48,7 @@ export class Game {
     this._draw();
     clearFrame();
 
-    requestAnimationFrame(ts => this._loop(ts));
+    requestAnimationFrame((ts) => this._loop(ts));
   }
 
   _update() {
@@ -53,6 +56,7 @@ export class Game {
   }
 
   _draw() {
+    this.ctx.setTransform(this.renderScale, 0, 0, this.renderScale, 0, 0);
     this.ctx.clearRect(0, 0, this.width, this.height);
     if (this.currentState) this.currentState.draw(this, this.ctx);
   }

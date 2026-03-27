@@ -140,11 +140,11 @@ export class WeaponSelectState {
       ctx.beginPath();
       ctx.rect(ix + 1, iy + 1, iw - 2, artH - 1);
       ctx.clip();
-      // Translate so the weapon's character-anchor (0,0) sits at cell center-bottom
+      // Translate so the weapon preview sits inside the cell for all weapon sprites.
       const scale = 2.5;
       ctx.translate(ix + iw / 2, iy + artH - 4);
       ctx.scale(scale, scale);
-      weapon.drawFn(ctx, 0, 0, 1, "idle", 0);
+      weapon.drawFn(ctx, 0, 20, 1, "idle", 0);
       ctx.restore();
     } else {
       ctx.fillStyle = weapon.color;
