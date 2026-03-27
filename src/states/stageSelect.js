@@ -9,9 +9,11 @@ const GRID_X = Math.floor((480 - STAGES.length * CELL_W) / 2);
 const GRID_Y = 100;
 
 export class StageSelectState {
-  enter(game, { char1, char2 }) {
+  enter(game, { char1, char2, weapon1, weapon2 }) {
     this.char1      = char1;
     this.char2      = char2;
+    this.weapon1    = weapon1 || null;
+    this.weapon2    = weapon2 || null;
     this.cursor     = 0;
     this.confirmed  = false;
     this.flashTimer = 0;
@@ -30,7 +32,7 @@ export class StageSelectState {
     }
 
     if (this.confirmed && this.flashTimer > 60) {
-      game.startFight(this.char1, this.char2, STAGES[this.cursor]);
+      game.startFight(this.char1, this.char2, this.weapon1, this.weapon2, STAGES[this.cursor]);
     }
   }
 

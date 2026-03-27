@@ -1,59 +1,67 @@
-// =====================================================================
-// STAGE ROSTER  (5 slots)
-// =====================================================================
-// To add your stage art:
-//   1. Copy assets/stages/stage_template.js and add your draw functions
-//   2. Import them below and set them on the matching entry
-//
-// Example (uncomment when your file is ready):
-// import {
-//   drawBackground as forestBg,
-//   drawFloor      as forestFloor,
-//   drawForeground as forestFg,
-// } from '../assets/stages/forest.js';
-// =====================================================================
+const MAP_LABELS =
+  globalThis.FIELD_MAP_META && Array.isArray(globalThis.FIELD_MAP_META.maps)
+    ? globalThis.FIELD_MAP_META.maps.reduce((acc, entry) => {
+        acc[entry.id] = entry.label;
+        return acc;
+      }, {})
+    : {};
+
+function getMapLabel(id, fallback) {
+  return MAP_LABELS[id] || fallback;
+}
+
+function createMapStage({ id, fallbackName, previewColor, season }) {
+  return {
+    id,
+    name: getMapLabel(id, fallbackName),
+    previewColor,
+    drawBackground: (ctx, width, height) => {
+      if (typeof globalThis.drawFieldMap === "function") {
+        globalThis.drawFieldMap(ctx, width, height, {
+          mapType: id,
+          season,
+          time: Date.now(),
+        });
+        return;
+      }
+      ctx.fillStyle = previewColor;
+      ctx.fillRect(0, 0, width, height);
+    },
+    // Prevent fallback floor from fight.js because map.js already paints the ground.
+    drawFloor: () => {},
+    drawForeground: null,
+  };
+}
 
 export const STAGES = [
-
-  {
-    id:             'stage_1',
-    name:           'Stage 1',
-    previewColor:   '#1a0a2e',  // thumbnail bg colour in stage select
-    drawBackground: null,       // function(ctx, width, height)
-    drawFloor:      null,       // function(ctx, width, height, floorY, stageLeft, stageRight)
-    drawForeground: null,       // function(ctx, width, height)  — drawn above players; can be null
-  },
-  {
-    id:             'stage_2',
-    name:           'Stage 2',
-    previewColor:   '#0a1a2e',
-    drawBackground: null,
-    drawFloor:      null,
-    drawForeground: null,
-  },
-  {
-    id:             'stage_3',
-    name:           'Stage 3',
-    previewColor:   '#0a2e0a',
-    drawBackground: null,
-    drawFloor:      null,
-    drawForeground: null,
-  },
-  {
-    id:             'stage_4',
-    name:           'Stage 4',
-    previewColor:   '#2e1a0a',
-    drawBackground: null,
-    drawFloor:      null,
-    drawForeground: null,
-  },
-  {
-    id:             'stage_5',
-    name:           'Stage 5',
-    previewColor:   '#2e0a1a',
-    drawBackground: null,
-    drawFloor:      null,
-    drawForeground: null,
-  },
-
+  createMapStage({
+    id: "meadow",
+    fallbackName: "Painterly Meadow",
+    previewColor: "#78c86f",
+    season: "spring",
+  }),
+  createMapStage({
+    id: "forest",
+    fallbackName: "Autumn Forest",
+    previewColor: "#6aa052",
+    season: "autumn",
+  }),
+  createMapStage({
+    id: "underwater",
+    fallbackName: "Underwater Garden",
+    previewColor: "#34a7c6",
+    season: "summer",
+  }),
+  createMapStage({
+    id: "castle",
+    fallbackName: "Night At The Castle",
+    previewColor: "#334567",
+    season: "winter",
+  }),
+  createMapStage({
+    id: "space",
+    fallbackName: "Starfield Drift",
+    previewColor: "#24194f",
+    season: "summer",
+  }),
 ];

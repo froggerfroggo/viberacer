@@ -65,6 +65,9 @@ export class Player {
 
     // Animation frame counter — increments every update tick (~60/sec)
     this.frameCount = 0;
+
+    // Equipped weapon (set by fight.js after selection)
+    this.weapon = null;
   }
 
   // ── Stat shortcuts ────────────────────────────────────────────────
@@ -97,11 +100,12 @@ export class Player {
   // Attack hitbox — only valid during active frames, else null
   getAttackHitbox() {
     if (!this.isAttacking() || !this.isActiveAttack()) return null;
-    const a = ATTACKS[this.attackType];
+    const a     = ATTACKS[this.attackType];
+    const reach = a.reach + (this.weapon ? (this.weapon.stats.reachBonus || 0) : 0);
     return {
-      x: this.facing === 1 ? this.x + 1 : this.x - 1 - a.reach,
+      x: this.facing === 1 ? this.x + 1 : this.x - 1 - reach,
       y: this.y - this.h * 0.72,
-      w: a.reach,
+      w: reach,
       h: a.hitboxH,
     };
   }
@@ -290,6 +294,11 @@ export class Player {
       this.drawSprite(ctx);
     } else {
       this.drawPlaceholder(ctx);
+    }
+
+    // Draw weapon on top of character
+    if (this.weapon && this.weapon.drawFn) {
+      this.weapon.drawFn(ctx, this.x, this.y, this.facing, this.state, this.frameCount);
     }
 
     // Active hitbox glow
