@@ -1,7 +1,9 @@
 {
   "name": "viberacer",
   "version": "1.0.0",
+  "description": "2D pixel-style two-player combat game",
   "scripts": {
-    "dev": "npx serve ."
+    "dev": "npx serve . -l 3000",
+    "start": "npx serve . -l 3000"
   }
 }
