@@ -1,0 +1,8 @@
+{
+  "name": "pixel-brawl",
+  "version": "0.1.0",
+  "description": "2D pixel-style two-player combat game",
+  "scripts": {
+    "start": "npx serve . -l 3000"
+  }
+}
